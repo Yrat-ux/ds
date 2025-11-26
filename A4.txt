@@ -1,0 +1,81 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+    int x, y, g, f;
+    Node* parent;
+};
+
+int H(int x1, int y1, int x2, int y2) { 
+    return abs(x1-x2) + abs(y1-y2); 
+}
+
+bool valid(int x, int y, int n, int m, vector<vector<int>>& grid) {
+    return x>=0 && x<n && y>=0 && y<m && grid[x][y]==0;
+}
+
+void AStar(vector<vector<int>>& grid, pair<int,int> S, pair<int,int> G) {
+    int n = grid.size(), m = grid[0].size();
+    priority_queue<Node*, vector<Node*>, 
+                  auto(*)(Node*,Node*) -> bool>
+        pq([](Node* a, Node* b){ return a->f > b->f; });
+
+    vector<vector<bool>> vis(n, vector<bool>(m, false));
+    int gx = G.first, gy = G.second;
+
+    Node* start = new Node{S.first, S.second, 0, H(S.first,S.second,gx,gy), nullptr};
+    pq.push(start);
+
+    int dx[4]={1,-1,0,0}, dy[4]={0,0,1,-1};
+
+    while(!pq.empty()) {
+        Node* cur = pq.top(); pq.pop();
+        int x=cur->x, y=cur->y;
+
+        if(vis[x][y]) continue;
+        vis[x][y] = true;
+
+        if(x==gx && y==gy) {
+            cout<<"Path Found!\nShortest Path: ";
+            vector<pair<int,int>> path;
+            while(cur) { path.push_back({cur->x,cur->y}); cur=cur->parent; }
+            reverse(path.begin(), path.end());
+            for(auto p : path) cout<<"("<<p.first<<","<<p.second<<") ";
+            cout<<"\n";
+            return;
+        }
+
+        for(int k=0;k<4;k++) {
+            int nx=x+dx[k], ny=y+dy[k];
+            if(valid(nx,ny,n,m,grid) && !vis[nx][ny]) {
+                int g = cur->g + 1;
+                int f = g + H(nx,ny,gx,gy);
+                pq.push(new Node{nx,ny,g,f,cur});
+            }
+        }
+    }
+    cout<<"No Path Found!\n";
+}
+
+int main(){
+    int n,m;
+    cout<<"Enter grid size: ";
+    cin>>n>>m;
+
+    vector<vector<int>> grid(n, vector<int>(m));
+    cout<<"Enter grid (0 free, 1 blocked):\n";
+    for(int i=0;i<n;i++)
+        for(int j=0;j<m;j++)
+            cin>>grid[i][j];
+
+    pair<int,int> S,G;
+    cout<<"Enter Start: ";
+    cin>>S.first>>S.second;
+    cout<<"Enter Goal: ";
+    cin>>G.first>>G.second;
+
+    AStar(grid,S,G);
+}
+
+
+

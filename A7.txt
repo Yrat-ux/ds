@@ -1,0 +1,79 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int r;
+    cout << "Enter number of rules: ";
+    cin >> r;
+
+    vector<vector<string>> premises(r);
+    vector<string> conclusion(r);
+    set<string> facts;
+    string goal;
+
+    // Taking rules
+    for (int i = 0; i < r; i++) {
+        int n;
+        cout << "\nRule " << i+1 << " - number of premises: ";
+        cin >> n;
+
+        cout << "Enter " << n << " premises: ";
+        for (int j = 0; j < n; j++) {
+            string p;
+            cin >> p;
+            premises[i].push_back(p);
+        }
+
+        cout << "Enter conclusion: ";
+        cin >> conclusion[i];
+    }
+
+    // Taking facts
+    int f;
+    cout << "\nEnter number of initial facts: ";
+    cin >> f;
+
+    cout << "Enter " << f << " facts: ";
+    for (int i = 0; i < f; i++) {
+        string x;
+        cin >> x;
+        facts.insert(x);
+    }
+
+    cout << "\nEnter goal: ";
+    cin >> goal;
+
+    // Forward chaining
+    cout << "\nApplying Forward Chaining...\n";
+    bool added = true;
+    set<string> derived = facts;
+
+    while (added) {
+        added = false;
+
+        for (int i = 0; i < r; i++) {
+            bool ok = true;
+
+            for (string p : premises[i]) {
+                if (!derived.count(p)) {
+                    ok = false;
+                    break;
+                }
+            }
+
+            if (ok && !derived.count(conclusion[i])) {
+                cout << "Derived new fact: " << conclusion[i] << "\n";
+                derived.insert(conclusion[i]);
+                added = true;
+            }
+
+            if (derived.count(goal)) {
+                cout << "\n✔ Goal '" << goal << "' reached!\n";
+                return 0;
+            }
+        }
+    }
+
+    cout << "\n✘ Goal cannot be derived.\n";
+    return 0;
+}

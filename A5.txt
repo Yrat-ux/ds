@@ -1,0 +1,67 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+    int value;
+    bool isMax;
+    vector<Node> children;
+
+    Node(int val = 0, bool maxNode = true) {
+        value = val;
+        isMax = maxNode;
+    }
+};
+
+// Minimax (works on NON-POINTER Node)
+int minimax(Node root) {
+    if (root.children.empty())
+        return root.value;
+
+    if (root.isMax) {
+        int best = -1e9;
+        for (auto child : root.children)
+            best = max(best, minimax(child));
+        return best;
+    } else {
+        int best = 1e9;
+        for (auto child : root.children)
+            best = min(best, minimax(child));
+        return best;
+    }
+}
+
+int main() {
+
+    // Root MAX node
+    Node root(0, true);
+
+    // Child MIN nodes
+    Node a(0, false);
+    Node b(0, false);
+    Node c(0, false);
+
+    // Add leaf children
+    a.children.push_back(Node(3, true));
+    a.children.push_back(Node(5, true));
+
+    b.children.push_back(Node(2, true));
+    b.children.push_back(Node(9, true));
+
+    c.children.push_back(Node(12, true));
+    c.children.push_back(Node(5, true));
+
+    // Attach to root
+    root.children.push_back(a);
+    root.children.push_back(b);
+    root.children.push_back(c);
+
+    // Output result
+    cout << "Min-Max Value of the tree = " << minimax(root) << endl;
+
+    return 0;
+}
+
+
+
+
+

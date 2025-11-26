@@ -1,0 +1,104 @@
+#include <iostream>
+#include <vector>
+#include <set>
+using namespace std;
+
+// Rule structure: IF premises -> conclusion
+struct Rule {
+    vector<string> premises;
+    string conclusion;
+};
+
+vector<Rule> rules;      // List of all rules
+set<string> facts;       // Known facts
+
+// Backward Chaining function
+bool canProve(string goal, set<string> &visited) {
+
+    // Already known fact
+    if (facts.count(goal))
+        return true;
+
+    // Avoid infinite loops
+    if (visited.count(goal))
+        return false;
+    visited.insert(goal);
+
+    // Try to prove using rules
+    for (auto &r : rules) {
+        if (r.conclusion == goal) {   // Rule concludes the goal
+            bool ok = true;
+            for (auto &p : r.premises) {
+                if (!canProve(p, visited)) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) return true;
+        }
+    }
+
+    return false;
+}
+
+int main() {
+    int choice;
+    string goal;
+
+    // SAMPLE KNOWLEDGE BASE
+    rules.push_back({{"A", "B"}, "C"});
+    rules.push_back({{"D"}, "B"});
+    facts.insert("A");
+    facts.insert("D");
+
+    do {
+        cout << "\n=== SIMPLE BACKWARD CHAINING ===\n";
+        cout << "1. Show Knowledge Base\n";
+        cout << "2. Query Goal\n";
+        cout << "3. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+
+        case 1:
+            cout << "\nFacts: ";
+            for (auto &f : facts) cout << f << " ";
+            cout << "\nRules:\n";
+            for (auto &r : rules) {
+                cout << "IF ";
+                for (int i = 0; i < r.premises.size(); i++) {
+                    cout << r.premises[i];
+                    if (i + 1 != r.premises.size()) cout << " AND ";
+                }
+                cout << " THEN " << r.conclusion << "\n";
+            }
+            break;
+
+        case 2:
+            cout << "Enter goal: ";
+            cin >> goal;
+            {
+                set<string> visited;
+                if (canProve(goal, visited))
+                    cout << "Goal '" << goal << "' CAN be proven.\n";
+                else
+                    cout << "Goal '" << goal << "' CANNOT be proven.\n";
+            }
+            break;
+
+        case 3:
+            cout << "Exiting...\n";
+            break;
+
+        default:
+            cout << "Invalid choice!\n";
+        }
+
+    } while (choice != 3);
+
+    return 0;
+}
+
+
+
