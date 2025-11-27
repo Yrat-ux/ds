@@ -2,66 +2,71 @@
 using namespace std;
 
 struct Node {
-    int value;
-    bool isMax;
-    vector<Node> children;
+    int value;  
+    vector<Node*> children;
 
-    Node(int val = 0, bool maxNode = true) {
-        value = val;
-        isMax = maxNode;
+    Node(int val = 0) {
+        value = val;    // leaf nodes hold real values
     }
 };
 
-// Minimax (works on NON-POINTER Node)
-int minimax(Node root) {
-    if (root.children.empty())
-        return root.value;
+// Minimax with depth-based alternation
+int minimax(Node* root, bool isMax) {
 
-    if (root.isMax) {
+    // LEAF → return its stored value
+    if (root->children.empty()) 
+        return root->value;
+
+    if (isMax) {
         int best = -1e9;
-        for (auto child : root.children)
-            best = max(best, minimax(child));
+        for (auto child : root->children)
+            best = max(best, minimax(child, false)); // next is MIN
         return best;
-    } else {
+    } 
+    else {
         int best = 1e9;
-        for (auto child : root.children)
-            best = min(best, minimax(child));
+        for (auto child : root->children)
+            best = min(best, minimax(child, true)); // next is MAX
         return best;
     }
 }
 
 int main() {
 
-    // Root MAX node
-    Node root(0, true);
+    // Build a deeper tree (depth 3+)
+    // Level 0 = MAX
+    Node* root = new Node();
 
-    // Child MIN nodes
-    Node a(0, false);
-    Node b(0, false);
-    Node c(0, false);
+    // Level 1 = MIN
+    Node* A = new Node();
+    Node* B = new Node();
 
-    // Add leaf children
-    a.children.push_back(Node(3, true));
-    a.children.push_back(Node(5, true));
+    // Level 2 = MAX
+    Node* A1 = new Node();
+    Node* A2 = new Node();
+    Node* B1 = new Node();
+    Node* B2 = new Node();
 
-    b.children.push_back(Node(2, true));
-    b.children.push_back(Node(9, true));
+    // Level 3 = MIN (leaf values)
+    A1->children.push_back(new Node(3));
+    A1->children.push_back(new Node(15));
 
-    c.children.push_back(Node(12, true));
-    c.children.push_back(Node(5, true));
+    A2->children.push_back(new Node(7));
+    A2->children.push_back(new Node(9));
+
+    B1->children.push_back(new Node(4));
+    B1->children.push_back(new Node(6));
+
+    B2->children.push_back(new Node(8));
+    B2->children.push_back(new Node(10));
+
+    // Attach to Level 2 MAX nodes
+    A->children = {A1, A2};
+    B->children = {B1, B2};
 
     // Attach to root
-    root.children.push_back(a);
-    root.children.push_back(b);
-    root.children.push_back(c);
+    root->children = {A, B};
 
-    // Output result
-    cout << "Min-Max Value of the tree = " << minimax(root) << endl;
-
+    cout << "Minimax value = " << minimax(root, true) << endl;
     return 0;
 }
-
-
-
-
-
