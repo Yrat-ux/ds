@@ -1,0 +1,110 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct State {
+    vector<vector<int>> b;
+    int x, y;          // blank tile position
+    string path;       // moves taken
+};
+
+vector<vector<int>> goal = {
+    {1,2,3},
+    {4,5,6},
+    {7,8,0}
+};
+
+string encode(vector<vector<int>> &b) {
+    string s;
+    for (auto &r : b) for (int x : r) s += char('0' + x);
+    return s;
+}
+
+bool isGoal(vector<vector<int>> &b) {
+    return b == goal;
+}
+
+vector<State> nextStates(State s) {
+    vector<State> v;
+    int dx[4] = {-1,1,0,0};
+    int dy[4] = {0,0,-1,1};
+    char mv[4] = {'U','D','L','R'};
+
+    for (int i = 0; i < 4; i++) {
+        int nx = s.x + dx[i], ny = s.y + dy[i];
+        if (nx >= 0 && nx < 3 && ny >= 0 && ny < 3) {
+            auto nb = s.b;
+            swap(nb[s.x][s.y], nb[nx][ny]);
+            v.push_back({nb, nx, ny, s.path + mv[i]});
+        }
+    }
+    return v;
+}
+
+void BFS(State start) {
+    queue<State> q;
+    set<string> vis;
+
+    q.push(start);
+    vis.insert(encode(start.b));
+
+    while (!q.empty()) {
+        State cur = q.front(); q.pop();
+        if (isGoal(cur.b)) {
+            cout << "BFS Found Goal: " << cur.path << "\n";
+            return;
+        }
+        for (auto nxt : nextStates(cur)) {
+            string k = encode(nxt.b);
+            if (!vis.count(k)) {
+                vis.insert(k);
+                q.push(nxt);
+            }
+        }
+    }
+    cout << "BFS: No solution.\n";
+}
+
+bool DFSutil(State cur, set<string> &vis, int depth, int limit, string &ans) {
+    if (isGoal(cur.b)) { ans = cur.path; return true; }
+    if (depth == limit) return false;
+
+    vis.insert(encode(cur.b));
+    for (auto nxt : nextStates(cur)) {
+        string k = encode(nxt.b);
+        if (!vis.count(k))
+            if (DFSutil(nxt, vis, depth + 1, limit, ans)) return true;
+    }
+    vis.erase(encode(cur.b));
+    return false;
+}
+
+void DFS(State start, int limit = 20) {
+    set<string> vis;
+    string ans;
+
+    if (DFSutil(start, vis, 0, limit, ans))
+        cout << "DFS Found Goal: " << ans << "\n";
+    else
+        cout << "DFS: No solution within depth " << limit << ".\n";
+}
+
+
+int main() {
+    vector<vector<int>> initial = {
+        {1,2,3},
+        {4,0,6},
+        {7,5,8}
+    };
+
+    int bx, by;
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (initial[i][j] == 0) bx = i, by = j;
+
+    State start = {initial, bx, by, ""};
+
+    BFS(start);
+    DFS(start, 20);   // DFS depth limit = 20
+
+    return 0;
+}
